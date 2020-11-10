@@ -16,11 +16,19 @@ You work for Motor Trend, a magazine about the automobile industry. Looking at a
 
 # Criteria
 a. Did the student interpret the coefficients correctly?
+
 b. Did the student do some exploratory data analyses?
+
 c. Did the student fit multiple models and detail their strategy for model selection?
+
 d. Did the student answer the questions of interest or detail why the question(s) is (are) not answerable?
+
 e. Did the student do a residual plot and some diagnostics?
+
 f. Did the student quantify the uncertainty in their conclusions and/or perform an inference correctly?
+
 g. Was the report brief (about 2 pages long) for the main body of the report and no longer than 5 with supporting appendix of figures?
+
 h. Did the report include an executive summary?
+
 i. Was the report done in Rmd (knitr)?
