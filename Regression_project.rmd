@@ -1,0 +1,152 @@
+---
+title: "Regression Analysis Peer-reviewed Project"
+author: "Nirmal Ghimire"
+date: "11/10/2020"
+output:
+  html_document:
+    df_print: paged
+---
+
+# Summary of the Research
+I am a data scientist at MTcars and currently I am working on a piece for a magazine called Motor Trend about the automobile industry. This project looks at a data set of a collection of cars as my team is interested in exploring the relationship between a set of variables and how they impact fuel efficiency using the miles they travel per one gallon of traditional fuel (MPG). This research briefly progresses through following steps:
+
+* Exploratory Analysis
+* Regression Analysis and Model Fit
+* Results and Assumption Checks
+* Conclusion
+
+**This research will attemp to answer following research questions:** 
+
+1. Is an automatic or manual transmission better for MPG?
+2. Quantify the MPG difference between automatic and manual transmissions.
+
+### Data and Methods
+This study will be conducted using the Motor Trend Car Road Tests (mtcars) data set. These data were extracted from the 1974 Motor Trend Magazine. The dataframe comprises fuel consumption by thirty-two automobile types based on ten different aspects. 
+
+Here are further information about the variables:included in the dataset:
+
+ - **mpg**:   Miles/US Gallon
+ - **cyl**:   Number fo Cylinder 
+ - **disp**:  Displacement/cubic inch
+ - **hp**:    Gross Horsepower
+ - **drat**:  Rear Axle Ratio
+ - **wt**:    Weight (in 1000 Lbs.)
+ - **qsec**:  1/4 Mile Time
+ - **vs**:    Engine (0=V-shaped, 1=Straight)
+ - **am**:    Transmission Type (0 = Automatic, 1 = Manual)
+ - **gear**:  Number of Forward Gears
+ - **carb**:  Number of Carburetors
+
+## 1. Exploratory Analysis
+Let's begin by invoking the library and selecting the dataframe
+
+```{r}
+library(datasets)
+data(mtcars)
+summary(mtcars)
+```
+
+Based on the summary, we have following variables with following specifications:
+
+```{r, reults='asis', echo=FALSE}
+library(knitr)
+kable(mtcars[1:32,], caption="Table Showing Automobile Types and Specifications")
+```
+ 
+We can clearly see that the vehicles have either 4, or 6, or 8 cylinders. Based on the research questions, we need to pay attention to *cyl* variable to identify how they differ in fule efficiency by cylinder types. In addition, we are also interested in the fuel efficiency based on automobiles' transmission types. The vehicles are identified to have either automatic (coded 0) or manual (coded 1) transmissions. 
+
+Along the way we will also see how the impact of these variables change when we include other variables in the model for example, the engine types, weight, gross horsepower, number of forward gears, or number of carburetors. The ***vs*** is a bionomial variable, ***gear*** and ***carb*** are categorical variables suggesting number of forward gears and number of carburetors, respectively. Similarly, ***wt*** (the weight of vehicles), ***hp*** (gross horsepower)and ***mpg*** miles per US gallon are continuous variables. 
+
+Let's check the correlation between the variables included in the dataset:
+```{r}
+pairs(mtcars, panel=panel.smooth, main="Pairwise Relationship between MTCARS Variables")
+```
+
+The graph shows that most of the variables do have some sort of linear relationship. Looks like the automobiles with higher number of cylinders give lower miles per gallon. Similarly, cars with automatic transmissions have lower mpg compared to cars with manual transmissions. Likewise, horsepower, weight, displacement, and number of carburetors seem to have lower fuel efficiency when the values increase. Conversely, the rear axle ratio, 1/4 mile time, and engine type seem to have positive linear relationships with mpg. 
+
+Let's check if they really behave the way they appear to be
+
+## 2. Regression Analysis and Model Fit
+There are some categorical variables in the dataset. We need to change them into factor variables before we are able to do conduct a regression analysis. 
+```{r}
+transmission<-as.factor(mtcars$am)
+levels(transmission)<-c("Automatic", "Manual")
+cylinder<-as.factor(mtcars$cyl)
+levels(cylinder)<-c("4cyl", "6cyl","8cyl")
+engine<-as.factor(mtcars$vs)
+levels(engine)<-c("V-Shaped", "Straight")
+GEAR<-as.factor(mtcars$gear)
+CARB<-as.factor(mtcars$carb)
+```
+
+### Research Question 1: “Is an automatic or manual transmission better for MPG”
+
+```{r}
+fit<-lm(mpg~am, data=mtcars)
+summary(fit)
+```
+
+As can be seen in the results above, the average miles per gallon are 17.147 across all cars and the model is statistically significant. Similarly, compared to the cars with the automatic transmission, the cars with manual transmission had better mpg per gallon. In other words, per one gallon traditional fuel is linked to 7.245 more miles in the cars with manual transmission, and this increase was statistically significantly higher than zero. 
+
+Following box plot strengthen the above finding. 
+```{r}
+library(ggplot2)
+g<-ggplot(mtcars, aes(x=transmission,y=mpg))
+g=g+xlab("Cars by Transmission Types")
+g=g+ylab("Miles per Gallon")
+g=g+geom_boxplot(aes(fill=transmission))
+print(g)
+```
+
+Clearly, automatic automobiles give approximately 17 miles per gallon, while the manual automobiles have slightly more than 22 miles per gallon. ***If you want to ride a car and save some dimes at the same time, you gotta walk away with manual transmission***.  
+
+```{r}
+library(ggplot2)
+fit1<-lm(mpg~vs, data=mtcars)
+summary(fit1)
+g1<-ggplot(mtcars, aes(x=engine,y=mpg))
+g1=g1+xlab("Cars by Engine Types")
+g1=g1+ylab("Miles per Gallon")
+g1=g1+geom_boxplot(aes(fill=engine))
+print(g1)
+```
+
+The the results show that average miles per gallon across the cars regardless of their engine types was 16.617 miles. Compared to the cars with v-shaped engine, straight engine cars have statistically significant higher fuel efficiency, i.e., 7.94 miles per gallon. This result has been strengthened by the box plot. We can clearly see that straight engine automobiles have slightly more than 22 miles per gallon rate, while the v-shaped cars give little more than 15 miles per gallon. 
+
+## Results and Assumption Checks
+
+Now, lets put transmission and engine types as the predictors of the mpg,and see how the aforementioned statistics change. 
+```{r}
+fit2<-lm(mpg~am+vs, data=mtcars)
+summary(fit2)
+```
+
+The results shows that this model is statistically significantly. Comparing R-squared among these models we can see the model with both predictors has better value, i.e., 0.6861. In addition, the average miles per gallon regardless of car types has been slightly dropped to 14.59. Both transmission types and engine types are statistically significant predictors of fuel efficiency in a car. 
+
+```{r}
+library(car)
+car::vif(fit2)
+```
+
+Based on the variance inflation factors which suggests the increase in the variance for the second variance in our final model. In reality we don't see any rate of inflation after we include vs in the model. So, it's okay, in fact better that we put them in the model. 
+
+```{r}
+anova(fit, fit1, fit2)
+```
+
+The above decision that the two predictor model was better than the one predictor model only, has been confirmed by further ANOVA analysis. Based on the results, the two predictors model is statistically significant, showing it is a better fitting model. 
+```{r}
+par(mfrow=c(2,2))    
+plot(fit2)
+```
+
+Looking at the upper left hand plot, i.e., Residuals vs. Fitted value, the horizontal reference line at 0 both rises and drops below 0 suggesting the sum around 0. Like in residual plots, the Normal Q-Q plot shows roughly 45 degree angle which suggests normality. 
+
+## Conclusion 
+1. The model with two predictors was better fitting model than the one predictor models. 
+2. The rate of Fuel efficiency in an automobile is directly related to their engine and transmission types. 
+3. Cars with manual transmission are more fuel efficient compared to the cars with automatic transmission. And
+4. Cars with straight engine types are more economical in terms of fuel consumption compared to the cars with v-shaped engines. 
+
+
+***Thanks***
